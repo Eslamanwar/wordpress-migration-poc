@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wordpress
+  labels:
+    app: wordpress
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: wordpress
+      tier: frontend
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: wordpress
+        tier: frontend
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - wordpress
+            topologyKey: "kubernetes.io/hostname"
+      containers:
+      - image: eslamanwar/wordpress:5
+        name: wordpress
+        env:
+        - name: WORDPRESS_DB_HOST
+          value: 192.168.0.40
+        - name: WORDPRESS_DB_PASSWORD
+          value: Password123
+        - name: WORDPRESS_DB_NAME
+          value: wordpress
+        - name: WORDPRESS_DB_USER
+          value: wp_svc
+        ports:
+        - containerPort: 80
+          name: wordpress
+
